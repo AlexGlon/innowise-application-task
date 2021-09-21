@@ -51,6 +51,12 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
+# REST_FRAMEWORK = {
+#     'DEFAULT_FILTER_BACKENDS': (
+#         'django_filters.rest_framework.FilterName',
+#     )
+# }
+
 ROOT_URLCONF = 'innowise_application_task.urls'
 
 TEMPLATES = [
