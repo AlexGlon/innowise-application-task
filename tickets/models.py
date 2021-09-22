@@ -25,7 +25,7 @@ class Ticket(models.Model):
 class Comment(models.Model):
     initial_ticket = models.ForeignKey(Ticket, on_delete=models.DO_NOTHING)
     comment = models.TextField()
-    support_user = models.ForeignKey(User, on_delete=models.DO_NOTHING)
+    support_member = models.ForeignKey(User, on_delete=models.DO_NOTHING)
     time = models.DateTimeField()
 
     def __str__(self):
