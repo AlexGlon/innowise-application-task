@@ -138,7 +138,7 @@ USE_TZ = True
 # Media files root directory
 
 # TODO: is this correct?
-MEDIA_ROOT = os.path.join(BASE_DIR, '/media/')
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
 
 MEDIA_URL = '/media/'
 

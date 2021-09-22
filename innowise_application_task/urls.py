@@ -18,11 +18,16 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import include, path
 from rest_framework import routers
-from tickets import views
+from tickets.views import UserViewSet, TicketViewSet, AttachmentViewSet, ResponseViewSet, CommentViewSet
 
 router = routers.DefaultRouter()
 # TODO: smth like router.register(r'users', views.UserViewSet)
-router.register(r'users', views.UserViewSet)
+router.register(r'users', UserViewSet)
+router.register(r'tickets', TicketViewSet)
+router.register(r'attachments', AttachmentViewSet)
+router.register(r'responses', ResponseViewSet)
+router.register(r'comments', CommentViewSet)
+
 
 urlpatterns = [
     path('', include(router.urls)),

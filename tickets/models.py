@@ -22,9 +22,9 @@ class Ticket(models.Model):
         return str(self.id)
 
 
-class Comment(models.Model):
+class Response(models.Model):
     initial_ticket = models.ForeignKey(Ticket, on_delete=models.DO_NOTHING)
-    comment = models.TextField()
+    content = models.TextField()
     support_member = models.ForeignKey(User, on_delete=models.DO_NOTHING)
     time = models.DateTimeField()
 
@@ -32,10 +32,10 @@ class Comment(models.Model):
         return str(self.id)
 
 
-class Reply(models.Model):
-    initial_comment = models.ForeignKey(Comment, on_delete=models.DO_NOTHING)
-    initial_reply = models.IntegerField(null=True)
-    reply = models.TextField()
+class Comment(models.Model):
+    initial_response = models.ForeignKey(Response, on_delete=models.DO_NOTHING)
+    initial_comment = models.IntegerField(null=True)
+    content = models.TextField()
     attachments = models.ManyToManyField(Attachment, blank=True)
     user = models.ForeignKey(User, on_delete=models.DO_NOTHING)
     time = models.DateTimeField()
