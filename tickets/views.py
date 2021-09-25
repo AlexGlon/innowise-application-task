@@ -1,5 +1,8 @@
 from django.contrib.auth.models import User
-from rest_framework import permissions, viewsets
+from rest_framework import mixins, permissions, viewsets, status
+from rest_framework.decorators import action
+from rest_framework.response import Response
+
 from tickets.serializers import TicketSerializer, UserSerializer
 from tickets.models import Ticket
 
@@ -15,6 +18,16 @@ class UserViewSet(viewsets.ModelViewSet):
 class TicketViewSet(viewsets.ModelViewSet):
     queryset = Ticket.objects.all()
     serializer_class = TicketSerializer
+
+    @action(methods=['GET'], detail=False, url_path='tickets_by_user/(?P<user>[^/.]+)')
+    def tickets_by_user(self, request, user):
+        # TODO: rewrite this using filter (that'd be defined after serializer_class)?
+        tickets = Ticket.objects.filter(user=user)
+        if not tickets:
+            return Response(status=status.HTTP_204_NO_CONTENT)
+
+        serializer = self.get_serializer(tickets, many=True)
+        return Response(serializer.data)
 
 
 # TODO: a view that lets a user check all his tickets
@@ -34,4 +47,4 @@ class TicketViewSet(viewsets.ModelViewSet):
 # TODO:
 # TODO:
 # TODO:
-# TODO:
+# TODO: remove empty TODOs
