@@ -1,9 +1,10 @@
 from django.contrib.auth.models import User
 from rest_framework import permissions, viewsets
-from tickets.serializers import TicketSerializer, AttachmentSerializer, CommentSerializer, ResponseSerializer, UserSerializer
-from tickets.models import Attachment, Response, Comment, Ticket
+from tickets.serializers import TicketSerializer, UserSerializer
+from tickets.models import Ticket
 
 
+# TODO: remove later
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
@@ -16,16 +17,21 @@ class TicketViewSet(viewsets.ModelViewSet):
     serializer_class = TicketSerializer
 
 
-class ResponseViewSet(viewsets.ModelViewSet):
-    queryset = Response.objects.all()
-    serializer_class = ResponseSerializer
-
-
-class CommentViewSet(viewsets.ModelViewSet):
-    queryset = Comment.objects.all()
-    serializer_class = CommentSerializer
-
-
-class AttachmentViewSet(viewsets.ModelViewSet):
-    queryset = Attachment.objects.all()
-    serializer_class = AttachmentSerializer
+# TODO: a view that lets a user check all his tickets
+# TODO: a view that lets support members check tickets by category
+# TODO: update method on tickets that lets support members change their status
+# TODO: implement status check logic (e.g. user can't comment on a closed ticket)
+# TODO:
+# TODO:
+# TODO:
+# TODO:
+# TODO:
+# TODO:
+# TODO:
+# TODO:
+# TODO:
+# TODO:
+# TODO:
+# TODO:
+# TODO:
+# TODO:

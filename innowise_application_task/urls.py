@@ -18,11 +18,16 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import include, path
 from rest_framework import routers
-from tickets.views import UserViewSet, TicketViewSet, AttachmentViewSet, ResponseViewSet, CommentViewSet
+
+from attachments.views import AttachmentViewSet
+from responses_comments.views import CommentViewSet, ResponseViewSet
+from tickets.views import UserViewSet, TicketViewSet
 
 router = routers.DefaultRouter()
-# TODO: smth like router.register(r'users', views.UserViewSet)
+
+# TODO: remove later
 router.register(r'users', UserViewSet)
+
 router.register(r'tickets', TicketViewSet)
 router.register(r'attachments', AttachmentViewSet)
 router.register(r'responses', ResponseViewSet)

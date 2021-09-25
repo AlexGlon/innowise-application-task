@@ -1,8 +1,10 @@
 from django.contrib.auth.models import User
 from rest_framework import serializers
-from tickets.models import Attachment, Response, Comment, Ticket
+
+from tickets.models import Ticket
 
 
+# TODO: remove later
 class UserSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = User
@@ -21,26 +23,3 @@ class TicketSerializer(serializers.ModelSerializer):
         model = Ticket
         fields = ('url', 'title', 'description', 'attachments', 'status', 'user', 'creation_time', )
         read_only_field = ('id',)
-
-
-class ResponseSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Response
-        fields = ('initial_ticket', 'content', 'support_member', 'time', )
-        read_only_field = ('id',)
-
-
-class CommentSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Comment
-        fields = ('initial_response', 'initial_comment', 'content', 'attachments', 'user', 'time', )
-        read_only_field = ('id',)
-
-
-class AttachmentSerializer(serializers.HyperlinkedModelSerializer):
-    url = serializers.HyperlinkedIdentityField(view_name='attachment-detail')
-
-    class Meta:
-        model = Attachment
-        fields = ('url', 'image', )
-        read_only_field = ('id', )

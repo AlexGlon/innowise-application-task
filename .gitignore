@@ -101,3 +101,5 @@ venv.bak/
 
 # custom additions #
 /tickets/migrations/
+/attachments/migrations/
+/responses_comments/migrations/
