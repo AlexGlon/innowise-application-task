@@ -29,10 +29,30 @@ class TicketViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(tickets, many=True)
         return Response(serializer.data)
 
+    @action(methods=['GET'], detail=False, url_path='tickets_by_status/(?P<ticket_status>[^/.]+)')
+    def tickets_by_status(self, request, ticket_status):
+        tickets = Ticket.objects.filter(status=ticket_status)
+        if not tickets:
+            return Response(status=status.HTTP_204_NO_CONTENT)
 
-# TODO: a view that lets a user check all his tickets
-# TODO: a view that lets support members check tickets by category
-# TODO: update method on tickets that lets support members change their status
+        serializer = self.get_serializer(tickets, many=True)
+        return Response(serializer.data)
+
+    @action(methods=['PATCH'], detail=True)
+    def status_update(self, request, pk=None):
+        ticket = self.get_object()
+
+        # `partial=True` allows {"status": "foobar"} JSONs to be used
+        # `context={'request': request}` is required by `HyperlinkedIdentityField`
+        serializer = TicketSerializer(ticket, context={'request': request},
+                                      data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.validated_data['status'] = request.data['status']
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
 # TODO: implement status check logic (e.g. user can't comment on a closed ticket)
 # TODO:
 # TODO:

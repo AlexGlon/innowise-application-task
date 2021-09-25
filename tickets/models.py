@@ -10,7 +10,7 @@ class Ticket(models.Model):
     attachments = models.ManyToManyField(Attachment, blank=True)
     # TODO: turn into IntegerField?
     status = models.CharField(max_length=15)
-    # `related_name` is necessary for UserSerializer to retirieve `tickets` field
+    # `related_name` is necessary for UserSerializer to retrieve `tickets` field
     user = models.ForeignKey(User, on_delete=models.DO_NOTHING, related_name='tickets')
     creation_time = models.DateTimeField()
 
