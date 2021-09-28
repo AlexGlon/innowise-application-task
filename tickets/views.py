@@ -58,7 +58,7 @@ class TicketViewSet(viewsets.ModelViewSet):
         # `partial=True` allows custom {"status": "foobar"} JSONs to be used
         # `context={'request': request}` is required by `HyperlinkedIdentityField`
         serializer = self.get_serializer(ticket, context={'request': request},
-                                      data=request.data, partial=True)
+                                         data=request.data, partial=True)
         if serializer.is_valid():
             serializer.validated_data['status'] = request.data['status']
             serializer.save()
@@ -68,8 +68,8 @@ class TicketViewSet(viewsets.ModelViewSet):
 
 # TODO: implement status check logic (e.g. user can't comment on a closed ticket)
 # TODO: permissions on every ticket
-# TODO:
-# TODO:
+# TODO: TESTS TESTS TESTS TESTS TESTS TESTS
+# TODO: authentication
 # TODO:
 # TODO:
 # TODO:
