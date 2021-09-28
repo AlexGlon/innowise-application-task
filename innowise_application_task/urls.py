@@ -14,10 +14,12 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.conf import settings
+from django.conf.urls import url
 from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import include, path
 from rest_framework import routers
+from rest_framework_swagger.views import get_swagger_view
 
 from attachments.views import AttachmentViewSet
 from responses_comments.views import CommentViewSet, ResponseViewSet
@@ -33,9 +35,12 @@ router.register(r'attachments', AttachmentViewSet)
 router.register(r'responses', ResponseViewSet)
 router.register(r'comments', CommentViewSet)
 
+# swagger view
+schema_view = get_swagger_view(title="Support desk API")
 
 urlpatterns = [
     path('', include(router.urls)),
     path('admin/', admin.site.urls),
     path('api-auth/', include('rest_framework.urls', namespace='rest_framework')),
+    url('swagger/', schema_view),
 ] + static(settings.MEDIA_URL)
