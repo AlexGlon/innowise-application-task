@@ -17,7 +17,7 @@ class Response(models.Model):
 
 class Comment(models.Model):
     initial_response = models.ForeignKey(Response, on_delete=models.DO_NOTHING)
-    initial_comment = models.IntegerField(null=True)
+    initial_comment = models.IntegerField(null=True, blank=True)
     content = models.TextField()
     attachments = models.ManyToManyField(Attachment, blank=True)
     user = models.ForeignKey(User, on_delete=models.DO_NOTHING)

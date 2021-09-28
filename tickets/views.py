@@ -21,6 +21,7 @@ class TicketViewSet(viewsets.ModelViewSet):
 
     @action(methods=['GET'], detail=False, url_path='tickets_by_user/(?P<user>[^/.]+)')
     def tickets_by_user(self, request, user):
+        """Returns all tickets created by a user with specified ID."""
         # TODO: rewrite this using filter (that'd be defined after serializer_class)?
         tickets = Ticket.objects.filter(user=user)
         if not tickets:
@@ -31,6 +32,7 @@ class TicketViewSet(viewsets.ModelViewSet):
 
     @action(methods=['GET'], detail=False, url_path='tickets_by_status/(?P<ticket_status>[^/.]+)')
     def tickets_by_status(self, request, ticket_status):
+        """Returns all tickets that have the specified status."""
         tickets = Ticket.objects.filter(status=ticket_status)
         if not tickets:
             return Response(status=status.HTTP_204_NO_CONTENT)
@@ -40,9 +42,10 @@ class TicketViewSet(viewsets.ModelViewSet):
 
     @action(methods=['PATCH'], detail=True)
     def status_update(self, request, pk=None):
+        """Updates status of the selected ticket. Receives a `{"status": "foobar"}` JSON as a request."""
         ticket = self.get_object()
 
-        # `partial=True` allows {"status": "foobar"} JSONs to be used
+        # `partial=True` allows custom {"status": "foobar"} JSONs to be used
         # `context={'request': request}` is required by `HyperlinkedIdentityField`
         serializer = TicketSerializer(ticket, context={'request': request},
                                       data=request.data, partial=True)
@@ -54,10 +57,8 @@ class TicketViewSet(viewsets.ModelViewSet):
 
 
 # TODO: implement status check logic (e.g. user can't comment on a closed ticket)
-# TODO:
-# TODO:
-# TODO:
-# TODO:
+# TODO: view that shows all tickets answered by a specified support member
+# TODO: permissions on every ticket
 # TODO:
 # TODO:
 # TODO:
