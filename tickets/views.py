@@ -1,6 +1,5 @@
 from django.contrib.auth.models import User
-from rest_framework import mixins, permissions, viewsets, status
-from rest_framework.decorators import action
+from rest_framework import mixins, permissions, viewsets, status, generics
 from rest_framework.response import Response
 
 from tickets.serializers import TicketSerializer, UserSerializer
@@ -19,46 +18,66 @@ class TicketViewSet(viewsets.ModelViewSet):
     queryset = Ticket.objects.all()
     serializer_class = TicketSerializer
 
-    @action(methods=['GET'], detail=False, url_path='by_user/(?P<user>[^/.]+)')
-    def tickets_by_user(self, request, user):
-        """Returns all tickets created by a user with specified ID."""
-        # TODO: rewrite this using filter (that'd be defined after serializer_class)?
-        tickets = Ticket.objects.filter(user=user)
+
+class TicketsByUserView(mixins.ListModelMixin, viewsets.GenericViewSet):
+    serializer_class = TicketSerializer
+
+    def get_queryset(self):
+        return Ticket.objects.filter(user=self.kwargs['user'])
+
+    def get(self, request, *args, **kwargs):
+        tickets = self.get_queryset()
         if not tickets:
             return Response(status=status.HTTP_204_NO_CONTENT)
 
         serializer = self.get_serializer(tickets, many=True)
         return Response(serializer.data)
 
-    @action(methods=['GET'], detail=False, url_path='by_status/(?P<ticket_status>[^/.]+)')
-    def tickets_by_status(self, request, ticket_status):
-        """Returns all tickets that have the specified status."""
-        tickets = Ticket.objects.filter(status=ticket_status)
+
+class TicketsByStatusView(mixins.ListModelMixin, viewsets.GenericViewSet):
+    serializer_class = TicketSerializer
+
+    def get_queryset(self):
+        return Ticket.objects.filter(status=self.kwargs['ticket_status'])
+
+    def get(self, request, *args, **kwargs):
+        tickets = self.get_queryset()
         if not tickets:
             return Response(status=status.HTTP_204_NO_CONTENT)
 
         serializer = self.get_serializer(tickets, many=True)
         return Response(serializer.data)
 
-    @action(methods=['GET'], detail=False, url_path='by_support_member/(?P<support>[^/.]+)')
-    def tickets_by_support_member(self, request, support):
-        """Returns all tickets that have been responded to by the specified support member."""
-        tickets = Ticket.objects.filter(response__support_member=support)
+
+class TicketsBySupportMemberView(mixins.ListModelMixin, viewsets.GenericViewSet):
+    serializer_class = TicketSerializer
+
+    def get_queryset(self):
+        return Ticket.objects.filter(response__support_member=self.kwargs['support'])
+
+    def get(self, request, *args, **kwargs):
+        tickets = self.get_queryset()
         if not tickets:
             return Response(status=status.HTTP_204_NO_CONTENT)
 
         serializer = self.get_serializer(tickets, many=True)
         return Response(serializer.data)
 
-    @action(methods=['PATCH'], detail=True)
-    def status_update(self, request, pk=None):
-        """Updates status of the selected ticket. Receives a `{"status": "foobar"}` JSON as a request."""
-        ticket = self.get_object()
+
+class TicketStatusUpdateView(mixins.UpdateModelMixin, viewsets.GenericViewSet):
+    # necessary as otherwise this view won't work at all
+    queryset = Ticket.objects.all()
+    serializer_class = TicketSerializer
+
+    # def get_queryset(self):
+    #     # TODO: it'd be better if `objects.get` method was used here, but using it throws an exception
+    #     return Ticket.objects.get(id=self.kwargs['pk'])
+
+    def put(self, request, *args, **kwargs):
+        ticket = Ticket.objects.get(id=self.kwargs['pk'])
 
         # `partial=True` allows custom {"status": "foobar"} JSONs to be used
-        # `context={'request': request}` is required by `HyperlinkedIdentityField`
-        serializer = self.get_serializer(ticket, context={'request': request},
-                                         data=request.data, partial=True)
+        serializer = self.get_serializer(ticket, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.validated_data['status'] = request.data['status']
             serializer.save()

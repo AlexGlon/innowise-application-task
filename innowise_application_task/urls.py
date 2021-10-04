@@ -23,7 +23,8 @@ from rest_framework_swagger.views import get_swagger_view
 
 from attachments.views import AttachmentViewSet
 from responses_comments.views import CommentViewSet, ResponseViewSet
-from tickets.views import UserViewSet, TicketViewSet
+from tickets.views import UserViewSet, TicketViewSet, TicketsByUserView, TicketsByStatusView, \
+    TicketsBySupportMemberView, TicketStatusUpdateView
 
 router = routers.DefaultRouter()
 
@@ -31,6 +32,13 @@ router = routers.DefaultRouter()
 router.register(r'users', UserViewSet)
 
 router.register(r'tickets', TicketViewSet)
+# TODO: is there any way to rewrite this? low-key looks like garbage ngl
+router.register(r'tickets/by_user/(?P<user>[^/.]+)', TicketsByUserView, basename='tickets-by-user')
+router.register(r'tickets/by_status/(?P<ticket_status>[^/.]+)', TicketsByStatusView, basename='tickets-by-status')
+router.register(r'tickets/by_support_member/(?P<support>[^/.]+)', TicketsBySupportMemberView,
+                basename='tickets-by-support-member')
+router.register(r'tickets/status_update', TicketStatusUpdateView, basename='ticket-status-update')
+
 router.register(r'attachments', AttachmentViewSet)
 router.register(r'responses', ResponseViewSet)
 router.register(r'comments', CommentViewSet)
