@@ -20,6 +20,7 @@ class TicketViewSet(viewsets.ModelViewSet):
 
 
 class TicketsByUserView(mixins.ListModelMixin, viewsets.GenericViewSet):
+    """Returns all tickets created by a user with specified ID."""
     serializer_class = TicketSerializer
 
     def get_queryset(self):
@@ -35,6 +36,7 @@ class TicketsByUserView(mixins.ListModelMixin, viewsets.GenericViewSet):
 
 
 class TicketsByStatusView(mixins.ListModelMixin, viewsets.GenericViewSet):
+    """Returns all tickets that have the specified status."""
     serializer_class = TicketSerializer
 
     def get_queryset(self):
@@ -50,6 +52,7 @@ class TicketsByStatusView(mixins.ListModelMixin, viewsets.GenericViewSet):
 
 
 class TicketsBySupportMemberView(mixins.ListModelMixin, viewsets.GenericViewSet):
+    """Returns all tickets that have been responded to by the specified support member."""
     serializer_class = TicketSerializer
 
     def get_queryset(self):
@@ -65,6 +68,7 @@ class TicketsBySupportMemberView(mixins.ListModelMixin, viewsets.GenericViewSet)
 
 
 class TicketStatusUpdateView(mixins.UpdateModelMixin, viewsets.GenericViewSet):
+    """Updates status of the selected ticket. Receives a `{"status": "foobar"}` JSON as a request."""
     # necessary as otherwise this view won't work at all
     queryset = Ticket.objects.all()
     serializer_class = TicketSerializer

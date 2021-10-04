@@ -22,7 +22,7 @@ from rest_framework import routers
 from rest_framework_swagger.views import get_swagger_view
 
 from attachments.views import AttachmentViewSet
-from responses_comments.views import CommentViewSet, ResponseViewSet
+from responses_comments.views import CommentViewSet, ResponseViewSet, ResponseByTicketView, CommentsThreadView
 from tickets.views import UserViewSet, TicketViewSet, TicketsByUserView, TicketsByStatusView, \
     TicketsBySupportMemberView, TicketStatusUpdateView
 
@@ -40,7 +40,12 @@ router.register(r'tickets/by_support_member/(?P<support>[^/.]+)', TicketsBySuppo
 router.register(r'tickets/status_update', TicketStatusUpdateView, basename='ticket-status-update')
 
 router.register(r'attachments', AttachmentViewSet)
+
 router.register(r'responses', ResponseViewSet)
+
+router.register(r'responses/(?P<pk>[^/.]+)/comments', CommentsThreadView, basename='response-comments')
+router.register(r'responses/by_ticket/(?P<ticket_id>[^/.]+)', ResponseByTicketView, basename='response-by-ticket')
+
 router.register(r'comments', CommentViewSet)
 
 # swagger view
