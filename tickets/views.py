@@ -77,7 +77,7 @@ class TicketStatusUpdateView(mixins.UpdateModelMixin, viewsets.GenericViewSet):
     #     # TODO: it'd be better if `objects.get` method was used here, but using it throws an exception
     #     return Ticket.objects.get(id=self.kwargs['pk'])
 
-    def put(self, request, *args, **kwargs):
+    def patch(self, request, *args, **kwargs):
         ticket = Ticket.objects.get(id=self.kwargs['pk'])
 
         # `partial=True` allows custom {"status": "foobar"} JSONs to be used

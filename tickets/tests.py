@@ -1,3 +1,5 @@
+import random
+
 from django.urls import reverse
 from rest_framework import status
 
@@ -6,12 +8,15 @@ from responses_comments.factories import ResponseFactory
 from tickets.factories import TicketFactory
 
 
+statuses = ['Open', 'Closed', 'Frozen']
+
 urls = {
     'response_main': '/responses/',
-    'ticket_main': '/tickets/',
     'ticket_by_user': '/tickets/by_user/',
     'ticket_by_status': '/tickets/by_status/',
     'ticket_by_support_member': '/tickets/by_support_member/',
+    'ticket_main': '/tickets/',
+    'ticket_status_update': '/tickets/status_update/',
     }
 
 
@@ -65,7 +70,7 @@ def ticket_id_extraction(response_data):
 
 class TicketsTestCase(UserAuthenticationTestCaseCore):
 
-    def mass_ticket_posting(self, tickets_data):
+    def ticket_mass_posting(self, tickets_data):
         """Auxiliary function for posting batches of tickets."""
         for ticket in tickets_data:
             self.client.post(f'{urls["ticket_main"]}', data=ticket)
@@ -144,10 +149,8 @@ class TicketsTestCase(UserAuthenticationTestCaseCore):
     def test_tickets_by_status_view(self):
         """Tests for 'List tickets by status' view."""
         tickets_data = ticket_generation(15)
+        self.ticket_mass_posting(tickets_data)
 
-        self.mass_ticket_posting(tickets_data)
-
-        statuses = ['Open', 'Closed', 'Frozen']
         for ticket_status in statuses:
             response = self.client.get(f'{urls["ticket_by_status"]}{ticket_status}/')
             # multiple conditions listed so that this test won't fail
@@ -177,4 +180,31 @@ class TicketsTestCase(UserAuthenticationTestCaseCore):
         self.client.force_authenticate(user=None)
         for member in support_id_list:
             response = self.client.get(f'{urls["ticket_by_support_member"]}{member}/')
+            self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_ticket_status_update_view(self):
+        """Test for 'Update ticket status' view."""
+        tickets_data = ticket_generation(15)
+        self.ticket_mass_posting(tickets_data)
+
+        # extracting tickets data from the overall tickets list
+        posted_tickets_data = self.client.get(f'{urls["ticket_main"]}').data['results']
+        ticket_id_list = []
+        # extracting IDs of existing tickets
+        for ticket in posted_tickets_data:
+            ticket_id_list.append(ticket_id_extraction(ticket))
+
+        for ticket in ticket_id_list:
+            response = self.client.patch(f'{urls["ticket_status_update"]}{ticket}/',
+                                       data={
+                                           'status': f'{random.choice(statuses)}'
+                                       })
+            self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        self.client.force_authenticate(user=None)
+        for ticket in ticket_id_list:
+            response = self.client.patch(f'{urls["ticket_status_update"]}{ticket}/',
+                                         data={
+                                             'status': f'{random.choice(statuses)}'
+                                         })
             self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
