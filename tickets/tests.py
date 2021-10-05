@@ -2,7 +2,38 @@ from django.urls import reverse
 from rest_framework import status
 
 from authentication.tests import UserAuthenticationTestCaseCore
+from responses_comments.factories import ResponseFactory
 from tickets.factories import TicketFactory
+
+
+urls = {
+    'response_main': '/responses/',
+    'ticket_main': '/tickets/',
+    'ticket_by_user': '/tickets/by_user/',
+    'ticket_by_status': '/tickets/by_status/',
+    'ticket_by_support_member': '/tickets/by_support_member/',
+    }
+
+
+def response_generation(batch_size):
+    """Auxiliary function for generating Faker response data."""
+    responses = ResponseFactory.create_batch(batch_size)
+
+    response_data_list = []
+    for response in responses:
+        response_data = {
+            'initial_ticket': response.initial_ticket.id,
+            'content': response.content,
+            'support_member': response.support_member.id,
+            'time': response.time,
+        }
+        response_data_list.append(response_data)
+
+    # returning a single dict in case we have generated only 1 response
+    if response_data_list.__len__() == 1:
+        return response_data_list[0]
+    else:
+        return response_data_list
 
 
 def ticket_generation(batch_size):
@@ -34,9 +65,14 @@ def ticket_id_extraction(response_data):
 
 class TicketsTestCase(UserAuthenticationTestCaseCore):
 
+    def mass_ticket_posting(self, tickets_data):
+        """Auxiliary function for posting batches of tickets."""
+        for ticket in tickets_data:
+            self.client.post(f'{urls["ticket_main"]}', data=ticket)
+
     def test_list_tickets(self):
         """Tests for ticket listing."""
-        response = self.client.get('/tickets/')
+        response = self.client.get(f'{urls["ticket_main"]}')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     # TODO: separate this into several tests?
@@ -44,25 +80,25 @@ class TicketsTestCase(UserAuthenticationTestCaseCore):
         """Tests for ticket creation."""
         ticket_data = ticket_generation(1)
 
-        response = self.client.post('/tickets/', data=ticket_data)
+        response = self.client.post(f'{urls["ticket_main"]}', data=ticket_data)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
         # this block tests the case when user isn't authenticated
         self.client.force_authenticate(user=None)
-        response = self.client.post('/tickets/', data=ticket_data)
+        response = self.client.post(f'{urls["ticket_main"]}', data=ticket_data)
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_delete_ticket(self):
         """Tests for ticket deletion."""
         ticket_data = ticket_generation(1)
-        response = self.client.post('/tickets/', data=ticket_data)
+        response = self.client.post(f'{urls["ticket_main"]}', data=ticket_data)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
         ticket_id = ticket_id_extraction(response.data)
 
         # first we check whether unauthorized user can delete tickets
         self.client.force_authenticate(user=None)
-        response = self.client.delete(f'/tickets/{ticket_id}/')
+        response = self.client.delete(f'{urls["ticket_main"]}{ticket_id}/')
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
         # TODO: rewrite this?
@@ -73,18 +109,18 @@ class TicketsTestCase(UserAuthenticationTestCaseCore):
     def test_update_ticket(self):
         """Tests for ticket update procedure."""
         ticket_data = ticket_generation(1)
-        response = self.client.post('/tickets/', data=ticket_data)
+        response = self.client.post(f'{urls["ticket_main"]}', data=ticket_data)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
         ticket_id = ticket_id_extraction(response.data)
 
         new_ticket_data = ticket_generation(1)
 
-        response = self.client.put(f'/tickets/{ticket_id}/', data=new_ticket_data)
+        response = self.client.put(f'{urls["ticket_main"]}{ticket_id}/', data=new_ticket_data)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         self.client.force_authenticate(user=None)
-        response = self.client.put(f'/tickets/{ticket_id}/', data=new_ticket_data)
+        response = self.client.put(f'{urls["ticket_main"]}{ticket_id}/', data=new_ticket_data)
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_tickets_by_user_view(self):
@@ -94,13 +130,51 @@ class TicketsTestCase(UserAuthenticationTestCaseCore):
         user_id_list = []
         for ticket in tickets_data:
             user_id_list.append(ticket['user'])
-            self.client.post('/tickets/', data=ticket)
+            self.client.post(f'{urls["ticket_main"]}', data=ticket)
 
         for user in user_id_list:
-            response = self.client.get(f'/tickets/by_user/{user}/')
+            response = self.client.get(f'{urls["ticket_by_user"]}{user}/')
             self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         self.client.force_authenticate(user=None)
         for user in user_id_list:
-            response = self.client.get(f'/tickets/by_user/{user}/')
+            response = self.client.get(f'{urls["ticket_by_user"]}{user}/')
+            self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_tickets_by_status_view(self):
+        """Tests for 'List tickets by status' view."""
+        tickets_data = ticket_generation(15)
+
+        self.mass_ticket_posting(tickets_data)
+
+        statuses = ['Open', 'Closed', 'Frozen']
+        for ticket_status in statuses:
+            response = self.client.get(f'{urls["ticket_by_status"]}{ticket_status}/')
+            # multiple conditions listed so that this test won't fail
+            # if, let's say, 'Frozen' status tickets won't generate at all
+            assert((response.status_code == status.HTTP_200_OK)
+                   or (response.status_code == status.HTTP_204_NO_CONTENT))
+
+        self.client.force_authenticate(user=None)
+        for ticket_status in statuses:
+            response = self.client.get(f'{urls["ticket_by_status"]}{ticket_status}/')
+            self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_tickets_by_support_member_view(self):
+        """Tests for 'List tickets responded by a support member' view."""
+        responses_data = response_generation(15)
+
+        support_id_list = []
+        for response in responses_data:
+            support_id_list.append(response['support_member'])
+            self.client.post(f'{urls["response_main"]}', data=response)
+
+        for member in support_id_list:
+            response = self.client.get(f'{urls["ticket_by_support_member"]}{member}/')
+            assert((response.status_code == status.HTTP_200_OK)
+                   or (response.status_code == status.HTTP_204_NO_CONTENT))
+
+        self.client.force_authenticate(user=None)
+        for member in support_id_list:
+            response = self.client.get(f'{urls["ticket_by_support_member"]}{member}/')
             self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
