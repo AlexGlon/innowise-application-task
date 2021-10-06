@@ -1,10 +1,9 @@
 import random
 
-from django.urls import reverse
 from rest_framework import status
 
 from authentication.tests import UserAuthenticationTestCaseCore
-from responses_comments.factories import ResponseFactory
+from responses_comments.tests_responses import response_generation
 from tickets.factories import TicketFactory
 
 
@@ -18,27 +17,6 @@ urls = {
     'ticket_main': '/tickets/',
     'ticket_status_update': '/tickets/status_update/',
     }
-
-
-def response_generation(batch_size):
-    """Auxiliary function for generating Faker response data."""
-    responses = ResponseFactory.create_batch(batch_size)
-
-    response_data_list = []
-    for response in responses:
-        response_data = {
-            'initial_ticket': response.initial_ticket.id,
-            'content': response.content,
-            'support_member': response.support_member.id,
-            'time': response.time,
-        }
-        response_data_list.append(response_data)
-
-    # returning a single dict in case we have generated only 1 response
-    if response_data_list.__len__() == 1:
-        return response_data_list[0]
-    else:
-        return response_data_list
 
 
 def ticket_generation(batch_size):
@@ -76,11 +54,10 @@ class TicketsTestCase(UserAuthenticationTestCaseCore):
             self.client.post(f'{urls["ticket_main"]}', data=ticket)
 
     def test_list_tickets(self):
-        """Tests for ticket listing."""
+        """Tests ticket listing."""
         response = self.client.get(f'{urls["ticket_main"]}')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-    # TODO: separate this into several tests?
     def test_create_ticket(self):
         """Tests for ticket creation."""
         ticket_data = ticket_generation(1)
@@ -108,7 +85,7 @@ class TicketsTestCase(UserAuthenticationTestCaseCore):
 
         # TODO: rewrite this?
         # sending a request with authorization credentials to test authenticated user's behaviour
-        response = self.client.delete(f'/tickets/{ticket_id}/', HTTP_AUTHORIZATION='Bearer ' + self.token)
+        response = self.client.delete(f'{urls["ticket_main"]}{ticket_id}/', HTTP_AUTHORIZATION='Bearer ' + self.token)
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
 
     def test_update_ticket(self):
@@ -196,9 +173,9 @@ class TicketsTestCase(UserAuthenticationTestCaseCore):
 
         for ticket in ticket_id_list:
             response = self.client.patch(f'{urls["ticket_status_update"]}{ticket}/',
-                                       data={
+                                         data={
                                            'status': f'{random.choice(statuses)}'
-                                       })
+                                         })
             self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         self.client.force_authenticate(user=None)

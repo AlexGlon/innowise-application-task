@@ -28,7 +28,7 @@ class CommentsThreadView(mixins.ListModelMixin, viewsets.GenericViewSet):
             return APIResponse(status=status.HTTP_204_NO_CONTENT)
 
         serializer = self.get_serializer(comments, many=True)
-        return Response(serializer.data)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class ResponseByTicketView(mixins.ListModelMixin, viewsets.GenericViewSet):
@@ -44,4 +44,4 @@ class ResponseByTicketView(mixins.ListModelMixin, viewsets.GenericViewSet):
             return Response(status=status.HTTP_204_NO_CONTENT)
 
         serializer = self.get_serializer(tickets, many=True)
-        return Response(serializer.data)
+        return Response(serializer.data, status=status.HTTP_200_OK)

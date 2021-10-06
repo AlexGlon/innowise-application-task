@@ -2,7 +2,6 @@ from rest_framework.test import APITestCase
 
 
 class UserAuthenticationTestCaseCore(APITestCase):
-
     def setUp(self):
         # Creating a new user by sending a POST request to Djoser endpoint
         self.user = self.client.post('/auth/users/', data={'username': 'testcaseuser',

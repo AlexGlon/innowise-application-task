@@ -8,5 +8,5 @@ class AttachmentSerializer(serializers.HyperlinkedModelSerializer):
 
     class Meta:
         model = Attachment
-        fields = ('url', 'image', )
+        fields = ('id', 'url', 'image', )
         read_only_field = ('id', )
