@@ -6,7 +6,6 @@ from responses_comments.factories import ResponseFactory
 urls = {
     'response_main': '/responses/',
     'response_by_ticket': '/responses/by_ticket/',
-    'response_thread': '/comments/',
     }
 
 
@@ -86,3 +85,22 @@ class ResponseTestCase(UserAuthenticationTestCaseCore):
         self.client.force_authenticate(user=None)
         response = self.client.put(f'{urls["response_main"]}{response_id}/', data=new_response_data)
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_response_by_ticket_view(self):
+        """Tests for 'Load response by ticket ID' view."""
+        responses = response_generation(15)
+
+        tickets_id_list = []
+        for response in responses:
+            tickets_id_list.append(response['initial_ticket'])
+            self.client.post(f'{urls["response_main"]}', data=response)
+
+        for ticket in tickets_id_list:
+            response = self.client.get(f'{urls["response_by_ticket"]}{ticket}/')
+            assert ((response.status_code == status.HTTP_200_OK)
+                    or (response.status_code == status.HTTP_204_NO_CONTENT))
+
+        self.client.force_authenticate(user=None)
+        for ticket in tickets_id_list:
+            response = self.client.get(f'{urls["response_by_ticket"]}{ticket}/')
+            self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)

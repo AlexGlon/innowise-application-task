@@ -5,7 +5,9 @@ from responses_comments.factories import CommentFactory
 
 urls = {
     'comment_main': '/comments/',
-    }
+    'response_main': '/responses/',
+    'response_thread': '/comments/',
+}
 
 
 def comment_generation(batch_size):
@@ -84,3 +86,23 @@ class CommentTestCase(UserAuthenticationTestCaseCore):
         self.client.force_authenticate(user=None)
         response = self.client.put(f'{urls["comment_main"]}{comment_id}/', data=new_comment_data)
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    # TODO: move to `tests_responses` since this endpoint belongs to comments model views?
+    def test_comments_thread_view(self):
+        """Tests for 'List all comments to a support response' view."""
+        comments_data = comment_generation(15)
+
+        source_responses = []
+        for comment in comments_data:
+            source_responses.append(comment['initial_response'])
+            self.client.post(f'{urls["comment_main"]}', data=comment)
+
+        for support_response in source_responses:
+            response = self.client.get(f'{urls["response_main"]}{support_response}{urls["response_thread"]}')
+            assert ((response.status_code == status.HTTP_200_OK)
+                    or (response.status_code == status.HTTP_204_NO_CONTENT))
+
+        self.client.force_authenticate(user=None)
+        for support_response in source_responses:
+            response = self.client.get(f'{urls["response_main"]}{support_response}{urls["response_thread"]}')
+            self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
