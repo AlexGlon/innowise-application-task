@@ -1,5 +1,3 @@
-import random
-
 from rest_framework import status
 
 from authentication.tests import UserAuthenticationTestCaseCore
@@ -161,6 +159,8 @@ class TicketsTestCase(UserAuthenticationTestCaseCore):
 
     def test_ticket_status_update_view(self):
         """Test for 'Update ticket status' view."""
+        import random
+
         tickets_data = ticket_generation(15)
         self.ticket_mass_posting(tickets_data)
 
