@@ -32,7 +32,7 @@ class TicketsByUserView(mixins.ListModelMixin, viewsets.GenericViewSet):
             return Response(status=status.HTTP_204_NO_CONTENT)
 
         serializer = self.get_serializer(tickets, many=True)
-        return Response(serializer.data)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class TicketsByStatusView(mixins.ListModelMixin, viewsets.GenericViewSet):
@@ -48,7 +48,7 @@ class TicketsByStatusView(mixins.ListModelMixin, viewsets.GenericViewSet):
             return Response(status=status.HTTP_204_NO_CONTENT)
 
         serializer = self.get_serializer(tickets, many=True)
-        return Response(serializer.data)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class TicketsBySupportMemberView(mixins.ListModelMixin, viewsets.GenericViewSet):
@@ -64,7 +64,7 @@ class TicketsBySupportMemberView(mixins.ListModelMixin, viewsets.GenericViewSet)
             return Response(status=status.HTTP_204_NO_CONTENT)
 
         serializer = self.get_serializer(tickets, many=True)
-        return Response(serializer.data)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class TicketStatusUpdateView(mixins.UpdateModelMixin, viewsets.GenericViewSet):
@@ -77,7 +77,7 @@ class TicketStatusUpdateView(mixins.UpdateModelMixin, viewsets.GenericViewSet):
     #     # TODO: it'd be better if `objects.get` method was used here, but using it throws an exception
     #     return Ticket.objects.get(id=self.kwargs['pk'])
 
-    def put(self, request, *args, **kwargs):
+    def patch(self, request, *args, **kwargs):
         ticket = Ticket.objects.get(id=self.kwargs['pk'])
 
         # `partial=True` allows custom {"status": "foobar"} JSONs to be used
@@ -85,7 +85,7 @@ class TicketStatusUpdateView(mixins.UpdateModelMixin, viewsets.GenericViewSet):
         if serializer.is_valid():
             serializer.validated_data['status'] = request.data['status']
             serializer.save()
-            return Response(serializer.data)
+            return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
