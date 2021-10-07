@@ -1,0 +1,1 @@
+from innowise_application_task.celery import app
