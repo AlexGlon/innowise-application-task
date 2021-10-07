@@ -4,6 +4,7 @@ import os
 from datetime import timedelta
 
 from celery import Celery
+from celery.schedules import crontab
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'innowise_application_task.settings')
 
@@ -16,8 +17,12 @@ app.autodiscover_tasks()
 #     app.start()
 
 app.conf.beat_schedule = {
-    'test_print': {
-        'task': 'tickets.tasks.test_print',
-        'schedule': timedelta(seconds=5),
+    # 'test_print': {
+    #     'task': 'tickets.tasks.test_print',
+    #     'schedule': timedelta(seconds=20),
+    # },
+    'close_old_tickets': {
+        'task': 'tickets.tasks.close_old_tickets',
+        'schedule': crontab(minute='*/1'),
     },
 }
