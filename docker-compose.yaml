@@ -1,0 +1,45 @@
+version: "3.3"
+
+services:
+  backend:
+    container_name: support_backend
+    build: .
+#    network_mode: host
+    links:
+      - postgres:postgres
+    networks:
+      - net
+    ports:
+      - '8000:8000'
+    depends_on:
+      - postgres
+      - redis
+  postgres:
+    container_name: pg_container
+    image: postgres:13.4-alpine
+#    network_mode: host
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    networks:
+      - net
+    ports:
+      - '5432:5432'
+    volumes:
+      - ./db/postgres_data:/var/lib/postgresql/data
+  redis:
+    container_name: redis_container
+    image: redis
+#    network_mode: host
+    networks:
+      - net
+    ports:
+      - '6379:6379'
+#
+#volumes:
+#  postgres_data:
+
+networks:
+  net:
+    driver: bridge
